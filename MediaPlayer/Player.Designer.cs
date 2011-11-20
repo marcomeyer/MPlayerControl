@@ -49,6 +49,7 @@ namespace MediaPlayer
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.panelVideo = new System.Windows.Forms.Panel();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.lblVideoLength = new System.Windows.Forms.Label();
@@ -61,27 +62,29 @@ namespace MediaPlayer
             this.lblVideoPosition = new System.Windows.Forms.Label();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnPlay = new System.Windows.Forms.Button();
+            this.timerAutoHide = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panelVideo
             // 
-            this.panelVideo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelVideo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelVideo.BackColor = System.Drawing.Color.Black;
             this.panelVideo.Location = new System.Drawing.Point(-15, -5);
             this.panelVideo.Name = "panelVideo";
             this.panelVideo.Size = new System.Drawing.Size(795, 378);
             this.panelVideo.TabIndex = 3;
             this.panelVideo.DoubleClick += new System.EventHandler(this.panelVideo_DoubleClick);
+            this.panelVideo.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelVideo_MouseMove);
             this.panelVideo.Resize += new System.EventHandler(this.panelVideo_Resize);
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.Filter = "Video Files|*.asf;*.asx;*.avi;*.mkv;*.wmv;*.mov;*.mpeg;*.mpg;*.mp2;*.mp4;*.flv;*." +
-                "webm;*.ogv;*.ogm;*.ogg;*.swf;*.vob;*.xvid;*.yuv;*.divx|All Files|*.*";
+    "webm;*.ogv;*.ogm;*.ogg;*.swf;*.vob;*.xvid;*.yuv;*.divx|All Files|*.*";
             // 
             // lblVideoLength
             // 
@@ -97,8 +100,8 @@ namespace MediaPlayer
             // 
             // trackBar1
             // 
-            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.trackBar1.Location = new System.Drawing.Point(75, 3);
             this.trackBar1.Maximum = 100;
             this.trackBar1.Name = "trackBar1";
@@ -111,8 +114,8 @@ namespace MediaPlayer
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BackColor = System.Drawing.Color.Black;
             this.panel1.Controls.Add(this.btnPlayerProperties);
             this.panel1.Controls.Add(this.btnRewind);
@@ -127,6 +130,7 @@ namespace MediaPlayer
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(779, 55);
             this.panel1.TabIndex = 2;
+            this.panel1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panel1_MouseMove);
             // 
             // btnPlayerProperties
             // 
@@ -243,6 +247,11 @@ namespace MediaPlayer
             this.btnPlay.MouseLeave += new System.EventHandler(this.btnPlay_MouseLeave);
             this.btnPlay.MouseHover += new System.EventHandler(this.btnPlay_MouseHover);
             // 
+            // timerAutoHide
+            // 
+            this.timerAutoHide.Interval = 5000;
+            this.timerAutoHide.Tick += new System.EventHandler(this.timerAutoHide_Tick);
+            // 
             // Player
             // 
             this.AllowDrop = true;
@@ -279,5 +288,6 @@ namespace MediaPlayer
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Button btnPlay;
         private System.Windows.Forms.Button btnPlayerProperties;
+        private System.Windows.Forms.Timer timerAutoHide;
     }
 }

@@ -173,14 +173,18 @@ namespace MediaPlayer
                 {
                     // Is currently paused so start playing file and set the image to the pause image.
                     btnPlay.Image = MediaPlayer.Properties.Resources.pause;
+                    HideControls();
                 }
                 if (this._play.CurrentStatus == MediaStatus.Playing)
                 {
                     // Is currently playing a file so pause it and set the image to the play image.
                     btnPlay.Image = MediaPlayer.Properties.Resources.play;
+                    ShowControls();
                 }
 
                 this._play.Pause();
+
+
 
                 return;
                 
@@ -464,9 +468,58 @@ namespace MediaPlayer
 
         #endregion Button Style Change
 
+
+        private System.DateTime _lastMouseMove = DateTime.Now;
         private void panelVideo_Resize(object sender, EventArgs e)
         {
             this._play.SetSize(this.panelVideo.Width, this.panelVideo.Height);
+        }
+
+        private bool _controlsHidden = false;
+        private void HideControls()
+        {
+            if (_controlsHidden)
+            {
+                return;
+            }
+            panel1.Height = 0;
+            panelVideo.Height += 55;
+            _controlsHidden = true;
+        }
+        private void ShowControls()
+        {
+            if (_controlsHidden == false)
+            {
+                return;
+            }
+            _lastMouseMove = DateTime.Now;
+            panel1.Height = 55;
+            panelVideo.Height -= 55;
+            _controlsHidden = false;
+        }
+
+        private void panelVideo_MouseMove(object sender, MouseEventArgs e)
+        {     
+            ShowControls();
+            timerAutoHide.Enabled = true;
+        }
+
+        private void panel1_MouseMove(object sender, MouseEventArgs e)
+        {
+            ShowControls();
+            timerAutoHide.Enabled = true;
+        }
+
+        private void timerAutoHide_Tick(object sender, EventArgs e)
+        {
+            TimeSpan diff = DateTime.Now.Subtract(_lastMouseMove);
+
+
+            if (diff.Seconds > 5)
+            {
+                HideControls();
+                timerAutoHide.Enabled = false;
+            }
         }
 
     }
