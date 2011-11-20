@@ -243,21 +243,36 @@ namespace LibMPlayerCommon
 
             p.StartInfo.FileName = this._backend.MEncoder;
             // -oac copy -ovc copy -o 'combined_clip.avi' 'clip1.avi' 'clip2.avi'
-            p.StartInfo.Arguments = "-oac copy -ovc copy -idx -o output.avi";
 
+            int loopCount = 0;
             foreach (string file in System.IO.Directory.GetFiles(System.Environment.CurrentDirectory, "*.avi"))
             {
-                p.StartInfo.Arguments += string.Format(" \"{0}\"", file);
+                p.StartInfo.Arguments = string.Format( "-oac copy -ovc copy -idx -o lpoutput{0}.avi", loopCount);
+                if (loopCount == 0)
+                {
+                    p.StartInfo.Arguments += string.Format(" \"{0}\"", file);
+                }
+                else
+                {
+                    p.StartInfo.Arguments += string.Format(" \"lpoutput{0}.avi\" \"{1}\"", loopCount-1, file);
+                }
+
+                p.StartInfo.RedirectStandardOutput = false;
+                p.StartInfo.CreateNoWindow = true;
+                p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                p.StartInfo.UseShellExecute = false;
+                p.Start();
+                p.WaitForExit();
+
+                if (loopCount != 0)
+                {
+                    System.IO.File.Delete(string.Format("lpoutput{0}.avi", loopCount-1));
+                }
+
+                loopCount++;
             }
 
-            p.StartInfo.RedirectStandardOutput = false;
-            p.StartInfo.CreateNoWindow = true;
-            p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-            p.StartInfo.UseShellExecute = false;
-            p.Start();
-            p.WaitForExit();
-
-            System.IO.File.Move(System.IO.Path.Combine(_videoDirectory, "output.avi"),
+            System.IO.File.Move(System.IO.Path.Combine(_videoDirectory,  string.Format("lpoutput{0}.avi", loopCount-1)),
                 System.IO.Path.Combine("../", "output.avi"));
         }
 
@@ -266,7 +281,7 @@ namespace LibMPlayerCommon
 
             if (System.IO.File.Exists(this._audioFile) == false)
             {
-                System.IO.File.Copy("output.avi", this._outputFilePath);
+                System.IO.File.Copy(System.IO.Path.Combine(_workingDirectory,"output.avi")  this._outputFilePath);
                 return;
             }
 
