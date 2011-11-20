@@ -281,7 +281,7 @@ namespace LibMPlayerCommon
 
             if (System.IO.File.Exists(this._audioFile) == false)
             {
-                System.IO.File.Copy(System.IO.Path.Combine(_workingDirectory,"output.avi")  this._outputFilePath);
+                System.IO.File.Copy(System.IO.Path.Combine(_workingDirectory,"output.avi"),  this._outputFilePath);
                 return;
             }
 
