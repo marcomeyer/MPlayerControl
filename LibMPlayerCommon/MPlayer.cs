@@ -82,6 +82,7 @@ namespace LibMPlayerCommon
 
         private ManualResetEvent startInit = new ManualResetEvent(false);
         private ManualResetEvent initEnded = new ManualResetEvent(false);
+        private Task task;
 
         ///
         private MPlayer()
@@ -130,12 +131,36 @@ namespace LibMPlayerCommon
             this._currentPostionTimer.Elapsed += new ElapsedEventHandler(_currentPostionTimer_Elapsed);
             this._currentPostionTimer.Enabled = true;
 
-            Task.Run(() => InitializeMplayer());
+            this.task = Task.Run(async () =>
+            {
+                await WaitOnReady();
+                await InitializeMplayer();
+                await WaitOnEnded();
+                this.MplayerRunning = true;
+            });
 
             if (loadMplayer)
             {
                 this.startInit.Set();
             }
+        }
+
+        private async Task WaitOnReady()
+        {
+            await Task.Yield();
+
+            this.startInit.WaitOne();
+
+            await Task.Delay(1);
+        }
+
+        private async Task WaitOnEnded()
+        {
+            await Task.Yield();
+
+            this.initEnded.WaitOne();
+
+            await Task.Delay(1);
         }
 
         /// <summary>
@@ -252,9 +277,9 @@ namespace LibMPlayerCommon
             return backend;
         }
 
-        private void InitializeMplayer()
+        private async Task InitializeMplayer()
         {
-            this.startInit.WaitOne();
+            await Task.Yield();
 
             MediaPlayer.StartInfo.CreateNoWindow = true;
             MediaPlayer.StartInfo.UseShellExecute = false;
@@ -319,6 +344,8 @@ namespace LibMPlayerCommon
             MediaPlayer.ErrorDataReceived += HandleMediaPlayerErrorDataReceived;
             MediaPlayer.BeginErrorReadLine();
             MediaPlayer.BeginOutputReadLine();
+
+            await Task.Delay(1);
         }
 
         /// <summary>
@@ -331,7 +358,7 @@ namespace LibMPlayerCommon
 
             this.startInit.Set();
 
-            this.initEnded.WaitOne();
+            this.task.Wait();
 
             LoadFile(filePath);
             this.CurrentStatus = MediaStatus.Playing;
@@ -848,7 +875,7 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            MplayerReady();
+            this.initEnded.Set();
 
             if (e.Data != null)
             {
@@ -977,12 +1004,6 @@ namespace LibMPlayerCommon
             }
         }
 
-        private void MplayerReady()
-        {
-            this.initEnded.Set();
-            this.MplayerRunning = true;
-        }
-
         /// <summary>
         /// All mplayer error output is read through this function.
         /// </summary>
@@ -990,7 +1011,7 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerErrorDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            MplayerReady();
+            this.initEnded.Set();
 
             if (e.Data != null)
             {
