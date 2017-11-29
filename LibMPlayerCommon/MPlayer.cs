@@ -26,6 +26,7 @@ using System.Timers;
 
 
 using System.Diagnostics;
+using System.Threading;
 
 
 namespace LibMPlayerCommon
@@ -77,6 +78,7 @@ namespace LibMPlayerCommon
         private string _setaudiolang;
 
         private string consoleArguments;
+        private AutoResetEvent initEnded = new AutoResetEvent(false);
 
         ///
         private MPlayer()
@@ -304,8 +306,6 @@ namespace LibMPlayerCommon
 
             MediaPlayer.Start();
 
-
-            this.MplayerRunning = true;
             this._mplayerProcessID = MediaPlayer.Id;
 
             //System.IO.StreamWriter mw = MediaPlayer.StandardInput;
@@ -316,8 +316,9 @@ namespace LibMPlayerCommon
             MediaPlayer.BeginErrorReadLine();
             MediaPlayer.BeginOutputReadLine();
 
+            this.initEnded.WaitOne();
 
-
+            this.MplayerRunning = true;
         }
 
         /// <summary>
@@ -849,6 +850,8 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
+            this.initEnded.Set();
+
             if (e.Data != null)
             {
                 string line = e.Data.ToString();
@@ -983,6 +986,8 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerErrorDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
+            this.initEnded.Set();
+
             if (e.Data != null)
             {
                 System.Console.WriteLine(e.Data.ToString());
