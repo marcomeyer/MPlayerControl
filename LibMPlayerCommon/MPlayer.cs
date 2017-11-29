@@ -27,6 +27,7 @@ using System.Timers;
 
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 
 namespace LibMPlayerCommon
@@ -129,8 +130,7 @@ namespace LibMPlayerCommon
             this._currentPostionTimer.Elapsed += new ElapsedEventHandler(_currentPostionTimer_Elapsed);
             this._currentPostionTimer.Enabled = true;
 
-            Action caller = InitializeMplayer;
-            caller.BeginInvoke(null, null);
+            Task.Run(() => InitializeMplayer());
 
             if (loadMplayer)
             {
