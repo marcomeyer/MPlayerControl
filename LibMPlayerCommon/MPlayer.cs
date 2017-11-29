@@ -78,7 +78,9 @@ namespace LibMPlayerCommon
         private string _setaudiolang;
 
         private string consoleArguments;
-        private AutoResetEvent initEnded = new AutoResetEvent(false);
+
+        private ManualResetEvent startInit = new ManualResetEvent(false);
+        private ManualResetEvent initEnded = new ManualResetEvent(false);
 
         ///
         private MPlayer()
@@ -127,12 +129,13 @@ namespace LibMPlayerCommon
             this._currentPostionTimer.Elapsed += new ElapsedEventHandler(_currentPostionTimer_Elapsed);
             this._currentPostionTimer.Enabled = true;
 
+            Action caller = InitializeMplayer;
+            caller.BeginInvoke(null, null);
+
             if (loadMplayer)
             {
-                Action caller = new Action(InitializeMplayer);
-                caller.BeginInvoke(null, null);
+                this.startInit.Set();
             }
-
         }
 
         /// <summary>
@@ -251,6 +254,7 @@ namespace LibMPlayerCommon
 
         private void InitializeMplayer()
         {
+            this.startInit.WaitOne();
 
             MediaPlayer.StartInfo.CreateNoWindow = true;
             MediaPlayer.StartInfo.UseShellExecute = false;
@@ -315,10 +319,6 @@ namespace LibMPlayerCommon
             MediaPlayer.ErrorDataReceived += HandleMediaPlayerErrorDataReceived;
             MediaPlayer.BeginErrorReadLine();
             MediaPlayer.BeginOutputReadLine();
-
-            this.initEnded.WaitOne();
-
-            this.MplayerRunning = true;
         }
 
         /// <summary>
@@ -329,11 +329,9 @@ namespace LibMPlayerCommon
         {
             this.currentFilePath = filePath;
 
+            this.startInit.Set();
 
-            if (this.MplayerRunning == false)
-            {
-                InitializeMplayer();
-            }
+            this.initEnded.WaitOne();
 
             LoadFile(filePath);
             this.CurrentStatus = MediaStatus.Playing;
@@ -850,7 +848,7 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            this.initEnded.Set();
+            MplayerReady();
 
             if (e.Data != null)
             {
@@ -979,6 +977,12 @@ namespace LibMPlayerCommon
             }
         }
 
+        private void MplayerReady()
+        {
+            this.initEnded.Set();
+            this.MplayerRunning = true;
+        }
+
         /// <summary>
         /// All mplayer error output is read through this function.
         /// </summary>
@@ -986,7 +990,7 @@ namespace LibMPlayerCommon
         /// <param name="e"></param>
         private void HandleMediaPlayerErrorDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
         {
-            this.initEnded.Set();
+            MplayerReady();
 
             if (e.Data != null)
             {
